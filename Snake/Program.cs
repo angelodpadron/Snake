@@ -1,72 +1,213 @@
-﻿namespace Snake;
+﻿using System.Diagnostics;
+
+namespace Snake;
 internal class Program
 {
     static void Main(string[] args)
     {
-        int posX = 0;
-        int posY = 0;
+        var snake = new Snake();
+        var food = new Food();
 
-        int movX = 1;
-        int movY = 0;
-
-        var random = new Random();
-
-        int foodX;
-        int foodY;
-
-        foodX = random.Next(0, Console.WindowWidth);
-        foodY = random.Next(0, Console.WindowHeight);
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
 
         while (true)
         {
-            if (posX == foodX && posY == foodY)
+            Console.Clear();
+
+            if (Console.KeyAvailable)
             {
-                foodX = random.Next(0, Console.WindowWidth);
-                foodY = random.Next(0, Console.WindowHeight);
+                snake.HandleDirection(Console.ReadKey());
             }
 
-            posX += movX;
-            posY += movY;
+            snake.Move();
 
-            Draw(ref posX, ref posY, foodX, foodY);
+            if (snake.Collision())
+            {
+                stopwatch.Stop();
+                TimeSpan ts = stopwatch.Elapsed;
+
+                Console.WriteLine("Game Over");
+                Console.WriteLine($"Final size: {snake.Size()}");
+                Console.WriteLine("Time wasted: {0:00}:{1:00}:{2:00}.{3}",
+                        ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
+                Console.WriteLine("Press a key to exit...");
+
+                while(!Console.KeyAvailable) { }
+
+                return;
+            }
+
+            snake.Draw();
+
+            food.Draw();
+
+            if (snake.HeadPosition().Equals(food.Position))
+            {
+                food.Respawn();
+                snake.Grow();
+            }
+
             
-            if (!Console.KeyAvailable) continue;
 
-            var input = Console.ReadKey();
-
-            switch (input.Key)
-            {
-                case ConsoleKey.UpArrow:
-                    movX = 0;
-                    movY = -1;
-                    break;
-                case ConsoleKey.DownArrow:
-                    movX = 0;
-                    movY = 1;
-                    break;
-                case ConsoleKey.LeftArrow:
-                    movX = -1;
-                    movY = 0;
-                    break;
-                case ConsoleKey.RightArrow:
-                    movX = 1;
-                    movY = 0;
-                    break;
-            }
+            Thread.Sleep(100);
 
         }
 
     }
+}
 
-    private static void Draw(ref int posX, ref int posY, int foodX, int foodY)
+class Food
+{
+    private readonly Random random;
+    private readonly Point position;
+
+    public Food() 
     {
-        Console.Clear();
+        random = new Random();
+        int posX = random.Next(0, Console.WindowWidth);
+        int posY = random.Next(0, Console.WindowHeight);
+        position = new Point(posX, posY);
+    }
 
-        Console.SetCursorPosition(posX, posY);
+    public void Draw()
+    {
+        Console.SetCursorPosition(position.X, position.Y);
         Console.Write("*");
-        Console.SetCursorPosition(foodX, foodY);
-        Console.WriteLine("+");
+    }
 
-        Thread.Sleep(100);
+    public void Respawn()
+    {
+        position.X = random.Next(0, Console.WindowWidth);
+        position.Y = random.Next(0, Console.WindowHeight);
+    }
+
+    public Point Position { get { return position; } }
+
+}
+
+class Snake
+{
+    private readonly List<Point> body;
+    private Direction direction;
+
+    public Snake()
+    {
+        body = [new(3,0), new(2,0), new(1,0), new(0,0)];
+        direction = Direction.Right;
+    }
+
+    public void Move()
+    {
+        Point head = body.First();
+        Point newHead = new(head.X, head.Y);
+
+        _ = direction switch
+        {
+            Direction.Right => newHead.X++,
+            Direction.Left => newHead.X--,
+            Direction.Up => newHead.Y--,
+            Direction.Down => newHead.Y++
+        };
+
+        body.Insert(0, newHead);
+        body.RemoveAt(body.Count - 1);
+
+    }
+
+    public void Draw()
+    {
+        body.ForEach(point =>
+        {
+            Console.SetCursorPosition(point.X, point.Y);
+            Console.WriteLine("°");
+        });
+    }
+
+    public void HandleDirection(ConsoleKeyInfo input)
+    {
+        direction = input.Key switch
+        {
+            ConsoleKey.UpArrow => Direction.Up,
+            ConsoleKey.DownArrow => Direction.Down,
+            ConsoleKey.LeftArrow => Direction.Left,
+            ConsoleKey.RightArrow => Direction.Right
+        };
+    }
+
+    public bool Collision()
+    {
+        bool bodyCollision = body.FindAll(point => point.Equals(body.First())).Count > 1;
+
+        int posX = HeadPosition().X;
+        int posY = HeadPosition().Y;
+
+        int windowHeight = Console.WindowHeight;
+        int windowWidth = Console.WindowWidth;
+
+        bool withinBound = posX >= 0 && posY >= 0 && posX < windowWidth && posY < windowHeight;
+
+        return bodyCollision || !withinBound;
+    }
+
+    public Point HeadPosition()
+    {
+        return body.First();
+    }
+
+    internal void Grow()
+    {
+        Point head = body.First();
+        Point newHead = new(head.X, head.Y);
+
+        _ = direction switch
+        {
+            Direction.Right => newHead.X++,
+            Direction.Left => newHead.X--,
+            Direction.Up => newHead.Y--,
+            Direction.Down => newHead.Y++
+        };
+
+        body.Insert(0, newHead);
+    }
+
+    internal object Size()
+    {
+        return body.Count;
+    }
+}
+
+enum Direction
+{
+    Left,
+    Right,
+    Up,
+    Down
+}
+
+class Point
+{
+    private int x;
+    private int y;
+
+    public Point(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int X
+    {
+        get => x; set => x = value;
+    }
+
+    public int Y
+    {
+        get => y; set => y = value;
+    }
+
+    public bool Equals(Point point)
+    {
+        return X == point.X && Y == point.Y;
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace Snake;
 
-public static class Shape
+internal static class Shape
 {
-    public static readonly string Star = "*";
-    public static readonly string Ball = "°";
-    public static readonly string Plus = "+";
+    public static readonly char Star = '*';
+    public static readonly char Ball = '°';
+    public static readonly char Plus = '+';
 }

@@ -1,31 +1,34 @@
 ﻿namespace Snake;
 
-class Food
+internal class Food
 {
     private readonly Random random;
-    private readonly Point position;
+    private Point position;
+    private readonly char shape;
 
-    public Food()
+    internal Food(char shape)
     {
         random = new Random();
-        int posX = random.Next(0, Console.WindowWidth);
-        int posY = random.Next(0, Console.WindowHeight - 1);
-        position = new Point(posX, posY);
+        int x = random.Next(0, Console.WindowWidth);
+        int y = random.Next(0, Console.WindowHeight - 1);
+        position = new Point(x, y);
+        this.shape = shape;
     }
 
-    public void Draw()
+    internal void Respawn()
     {
-        Console.SetCursorPosition(position.X, position.Y);
-        Console.Write("*");
+        int x = random.Next(0, Console.WindowWidth);
+        int y = random.Next(0, Console.WindowHeight - 1);
+
+        position = new Point(x, y);
     }
 
-    public void Respawn()
+    internal char Shape()
     {
-        position.X = random.Next(0, Console.WindowWidth);
-        position.Y = random.Next(0, Console.WindowHeight);
+        return shape;
     }
 
-    public Point Position
+    internal Point Position
     {
         get { return position; }
     }

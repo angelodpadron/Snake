@@ -1,23 +1,17 @@
 ﻿namespace Snake;
 
-class Point(int x, int y)
+internal struct Point
 {
-    private int x = x;
-    private int y = y;
+    internal int X { get; }
+    internal int Y { get; }
 
-    public int X
+    internal Point(int x, int y)
     {
-        get => x;
-        set => x = value;
+        X = x;
+        Y = y;
     }
 
-    public int Y
-    {
-        get => y;
-        set => y = value;
-    }
-
-    public bool Equals(Point point)
+    internal bool Equals(Point point)
     {
         return X == point.X && Y == point.Y;
     }

@@ -13,6 +13,8 @@ internal class Program
     {
         ConsoleKey mode;
 
+        Console.CursorVisible = false;
+
         do
         {
             Console.Clear();
@@ -23,7 +25,7 @@ internal class Program
         } while (mode != ConsoleKey.D1 && mode != ConsoleKey.D2);
 
         List<Snake> snakes = [];
-        var food = new Food();
+        var food = new Food(Shape.Plus);
         Stopwatch timer = new();
 
         switch (mode)
@@ -59,12 +61,13 @@ internal class Program
         }
 
         timer.Start();
+        Console.Clear();
 
         while (true)
         {
-            Console.Clear();
+            //Console.Clear();
 
-            Console.SetCursorPosition(0, 0);
+            //Console.SetCursorPosition(0, 0);
 
             if (Console.KeyAvailable)
             {
@@ -118,10 +121,9 @@ internal class Program
                     food.Respawn();
                     snake.Grow();
                 }
-            });
+            });         
 
-            snakes.ForEach(snake => snake.Draw());
-            food.Draw();
+            Renderer.Render(snakes, food);
 
             Thread.Sleep(100);
         }

@@ -1,39 +1,40 @@
 ﻿namespace Snake;
 
-class Snake(List<Point> body, Direction direction, String shape, ControlScheme controlScheme)
+internal class Snake(List<Point> body, Direction direction, char shape, ControlScheme controlScheme)
 {
     private readonly List<Point> body = body;
-    private readonly string shape = shape;
+    private readonly char shape = shape;
     private readonly ControlScheme controlScheme = controlScheme;
     private Direction direction = direction;
 
-    public void Move()
+    internal void Move()
     {
         Point head = body.First();
-        Point newHead = new(head.X, head.Y);
+        int x = head.X;
+        int y = head.Y;
 
         _ = direction switch
         {
-            Direction.Right => newHead.X++,
-            Direction.Left => newHead.X--,
-            Direction.Up => newHead.Y--,
-            Direction.Down => newHead.Y++
+            Direction.Left => x--,
+            Direction.Right => x++,
+            Direction.Up => y--,
+            Direction.Down => y++
         };
 
-        body.Insert(0, newHead);
+        body.Insert(0, new(x, y));
         body.RemoveAt(body.Count - 1);
     }
 
-    public void HandleInput(ConsoleKey key)
+    internal void HandleInput(ConsoleKey key)
     {
         if (controlScheme == ControlScheme.Player1)
         {
             direction = key switch
             {
-                ConsoleKey.UpArrow => Direction.Up,
-                ConsoleKey.DownArrow => Direction.Down,
                 ConsoleKey.LeftArrow => Direction.Left,
                 ConsoleKey.RightArrow => Direction.Right,
+                ConsoleKey.UpArrow => Direction.Up,
+                ConsoleKey.DownArrow => Direction.Down,
                 _ => direction
             };
 
@@ -44,62 +45,66 @@ class Snake(List<Point> body, Direction direction, String shape, ControlScheme c
         {
             direction = key switch
             {
-                ConsoleKey.W => Direction.Up,
-                ConsoleKey.S => Direction.Down,
                 ConsoleKey.A => Direction.Left,
                 ConsoleKey.D => Direction.Right,
+                ConsoleKey.W => Direction.Up,
+                ConsoleKey.S => Direction.Down,
                 _ => direction
             };
         }
     }
 
-    public void Draw()
-    {
-        body.ForEach(point =>
-        {
-            Console.SetCursorPosition(point.X, point.Y);
-            Console.Write(shape);
-        });
-    }
-
-    public bool Collision()
+    internal bool Collision()
     {
         bool bodyCollision = body.FindAll(point => point.Equals(body.First())).Count > 1;
 
-        int posX = HeadPosition().X;
-        int posY = HeadPosition().Y;
+        int headXPos = HeadPosition().X;
+        int headYPos = HeadPosition().Y;
 
-        int windowHeight = Console.WindowHeight;
-        int windowWidth = Console.WindowWidth;
+        int height = Console.WindowHeight - 1;
+        int width = Console.WindowWidth;
 
-        bool withinBound = posX >= 0 && posY >= 0 && posX < windowWidth && posY < windowHeight;
+        bool withinBound = headXPos >= 0 && headYPos >= 0 && headXPos < width && headYPos < height;
 
         return bodyCollision || !withinBound;
     }
 
-    public Point HeadPosition()
+    internal Point HeadPosition()
     {
         return body.First();
     }
 
-    public void Grow()
+    internal void Grow()
     {
         Point head = body.First();
-        Point newHead = new(head.X, head.Y);
+
+        int x = head.X;
+        int y = head.Y;
+
 
         _ = direction switch
         {
-            Direction.Right => newHead.X++,
-            Direction.Left => newHead.X--,
-            Direction.Up => newHead.Y--,
-            Direction.Down => newHead.Y++
+            Direction.Left => x--,
+            Direction.Right => x++,
+            Direction.Up => y--,
+            Direction.Down => y++
         };
 
-        body.Insert(0, newHead);
+        body.Insert(0, new(x, y));
     }
 
-    internal object Size()
+    internal int Size()
     {
         return body.Count;
+    }
+
+    internal List<Point> Body()
+    {
+        return body;
+    }
+
+    internal char Shape()
+    {
+        return shape;
     }
 }
